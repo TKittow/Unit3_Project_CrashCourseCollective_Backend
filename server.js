@@ -25,10 +25,35 @@ app.listen(port, () => {
     console.log(`Listening on port: ${port}`)
 })
 
-<<<<<<< HEAD
-=======
-
 mongoose.connect(process.env.DATABASE_URL)
+
+const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true
+    },
+    userEmail: {
+        type: String,
+        required: true
+    },
+    cohort: {
+        type: Number,
+        required: false
+    },
+    linkedIn: {
+        type: String,
+        required: false
+    },
+    lastLogin: {
+        type: Date, 
+        required: true
+    }
+})
+
+
+app.get("/", (req, res) => {
+    res.json({message: "Server running"})
+})
 
 //GITHUB ACCESS
 app.get('/getAccessToken', async function (req,res) {
@@ -63,4 +88,3 @@ app.get ('/getUserData', async function (req,res) {
         res.json(data)
     })
 })
->>>>>>> dev
