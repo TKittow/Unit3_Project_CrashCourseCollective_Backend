@@ -15,5 +15,3 @@ app.listen(port, () => {
     console.log(`Listening on port: ${port}`)
 })
 
-
-mongoose.connect(process.env.DATABASE_URL)
