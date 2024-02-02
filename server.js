@@ -50,6 +50,35 @@ const userSchema = new mongoose.Schema({
     }
 })
 
+const User = mongoose.model("User", userSchema)
+
+app.post("/user/login", async (req, res) => {
+    const now = new Date()
+
+    if ( await User.countDocuments({"userEmail": req.body.userEmail}) === 0 ) {
+        const newUser = new User({
+            username: req.body.username,
+            userEmail: req.body.userEmail,
+            cohort: req.body.cohort,
+            linkedIn: req.body.linkedIn,
+            lastLogin: now
+        })
+        newUser.save()
+        .then(() => {
+            res.sendStatus(200)
+        })
+        .catch(err => {
+            res.sendStatus(500)
+        })
+    } else {
+        await User.findOneAndUpdate(
+            {"userEmail": req.body.userEmail}, 
+            {cohort: req.body.cohort},
+            {linkedIn: req.body.linkedIn},
+            {lastLogin: now})
+        res.sendStatus(200)
+    }
+})
 
 app.get("/", (req, res) => {
     res.json({message: "Server running"})
