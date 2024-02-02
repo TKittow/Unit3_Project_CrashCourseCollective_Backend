@@ -50,6 +50,30 @@ const userSchema = new mongoose.Schema({
     }
 })
 
+const projectSchema = new mongoose.Schema({
+    projectName: {
+        type: String,
+        required: true
+    },
+    username: {
+        // This needs to be pulled from the User database
+        type: String,
+        required: true
+    },
+    collaborators: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    deploymentLink: {
+        type: String,
+        required: true
+    },
+})
+
 const User = mongoose.model("User", userSchema)
 
 app.post("/user/login", async (req, res) => {
