@@ -74,7 +74,9 @@ const projectSchema = new mongoose.Schema({
     },
 })
 
+
 const User = mongoose.model("User", userSchema)
+const Project = mongoose.model("Project", projectSchema)
 
 app.post("/user/login", async (req, res) => {
     const now = new Date()
@@ -106,6 +108,25 @@ app.post("/user/login", async (req, res) => {
 
 app.get("/", (req, res) => {
     res.json({message: "Server running"})
+})
+
+//Posting a new project
+app.post('/project/add', async (req, res) => {
+    const project = req.body
+    const newProject = new Project({
+        projectName: project.projectName,
+        username: project.username,
+        collaborators: [project.collaborators1, project.collaborators2],
+        description: project.description,
+        deploymentLink: project.deploymentLink
+    })
+
+    await newProject.save()
+    .then(() => {
+        console.log(`${project.projectName} was added to the database`)
+    res.sendStatus(200)
+    })
+    .catch(error => console.error(error))
 })
 
 //GITHUB ACCESS
