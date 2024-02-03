@@ -4,7 +4,6 @@ import cors from "cors"
 import bodyParser from "body-parser"
 import mongoose from "mongoose"
 
-
 const fetch = (...args) => 
   import('node-fetch')
   .then(({default: fetch}) => 
@@ -27,8 +26,88 @@ app.listen(port, () => {
     console.log(`Listening on port: ${port}`)
 })
 
-
 mongoose.connect(process.env.DATABASE_URL)
+
+const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true
+    },
+    userEmail: {
+        type: String,
+        required: true
+    },
+    cohort: {
+        type: Number,
+        required: false
+    },
+    linkedIn: {
+        type: String,
+        required: false
+    },
+    lastLogin: {
+        type: Date, 
+        required: true
+    }
+})
+
+const projectSchema = new mongoose.Schema({
+    projectName: {
+        type: String,
+        required: true
+    },
+    username: {
+        // This needs to be pulled from the User database
+        type: String,
+        required: true
+    },
+    collaborators: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    deploymentLink: {
+        type: String,
+        required: true
+    },
+})
+
+const User = mongoose.model("User", userSchema)
+
+app.post("/user/login", async (req, res) => {
+    const now = new Date()
+
+    if ( await User.countDocuments({"userEmail": req.body.userEmail}) === 0 ) {
+        const newUser = new User({
+            username: req.body.username,
+            userEmail: req.body.userEmail,
+            cohort: req.body.cohort,
+            linkedIn: req.body.linkedIn,
+            lastLogin: now
+        })
+        newUser.save()
+        .then(() => {
+            res.sendStatus(200)
+        })
+        .catch(err => {
+            res.sendStatus(500)
+        })
+    } else {
+        await User.findOneAndUpdate(
+            {"userEmail": req.body.userEmail}, 
+            {cohort: req.body.cohort},
+            {linkedIn: req.body.linkedIn},
+            {lastLogin: now})
+        res.sendStatus(200)
+    }
+})
+
+app.get("/", (req, res) => {
+    res.json({message: "Server running"})
+})
 
 //GITHUB ACCESS
 app.get('/getAccessToken', async function (req,res) {
