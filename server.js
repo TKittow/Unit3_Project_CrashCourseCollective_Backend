@@ -116,7 +116,7 @@ app.post('/project/add', async (req, res) => {
     const newProject = new Project({
         projectName: project.projectName,
         username: project.username,
-        collaborators: [project.collaborators1, project.collaborators2],
+        collaborators: project.collaborators1,
         description: project.description,
         deploymentLink: project.deploymentLink
     })
