@@ -34,10 +34,41 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    fullName: {
+        type: String,
+        required: false
+    },
+    gitUrl: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: false
+    },
+    aboutMe: {
+        type: String,
+        required: false
+    },
     lastLogin: {
         type: Date, 
         required: true
+    },
+    cohort: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cohort"
     }
+})
+
+const cohortSchema = new mongoose.Schema({
+    cohortName: {
+        type: String,
+        required: true
+    },
+    alumni: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "Users"
+    } 
 })
 
 const projectSchema = new mongoose.Schema({
@@ -66,21 +97,74 @@ const projectSchema = new mongoose.Schema({
 
 
 const User = mongoose.model("User", userSchema)
+const Cohort = mongoose.model("Cohort", cohortSchema)
 const Project = mongoose.model("Project", projectSchema)
+
+app.post("/cohorts/new", (req, res) => {
+    const cohort = req.body
+    const newCohort = new Cohort({ cohortName: cohort.cohortName })
+    newCohort.save()
+    .then(() => {
+        console.log("Cohort saved")
+        res.sendStatus(200)
+    })
+    .catch((e) => console.error(e))
+})
+
+app.get("/cohorts", async (req, res) => {
+    try {
+        const allCohorts = await Cohort.find({}).populate("cohortName")
+        res.json(allCohorts)
+    } catch(e) {
+        console.error(e)
+    }
+})
+
+app.put("/cohorts/:id", async (req, res) => {
+    try {
+        const cohortId = req.params.id
+        const updatedCohortData = req.body
+
+        // Check if the cohort exists
+        const existingCohort = await Cohort.findById(cohortId)
+
+        if (existingCohort) {
+            // Update cohort details
+            await Cohort.findByIdAndUpdate(cohortId, updatedCohortData)
+            res.sendStatus(200);
+        } else {
+            res.status(404).send("Cohort not found")
+        }
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
+app.get("/users", async (req, res) => {
+    try {
+        const allUsers = await User.find()
+        res.json(allUsers)
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
 
 
 app.post("/users/new", async (req, res) => {
     const now = new Date()
-    console.log("Request body:", req.body);
 
     if ( await User.countDocuments({"username": req.body.username}) === 0 ) {
         const newUser = new User({
             username: req.body.username,
+            gitUrl: req.body.gitUrl,
             lastLogin: now
         })
         newUser.save()
         .then(() => {
             res.sendStatus(200)
+            console.log(`New user: ${req.body.username}, gitUrl: ${req.body.gitUrl} added to database`)
         })
         .catch(err => {
             res.sendStatus(500)
@@ -88,7 +172,8 @@ app.post("/users/new", async (req, res) => {
     } else {
         try {
             await User.findOneAndUpdate(
-                {"username": req.body.username}, 
+                {"username": req.body.username},
+                {"gitUrl": req.body.gitUrl}, 
                 {lastLogin: now}
                 )
                 res.sendStatus(200)
@@ -98,6 +183,41 @@ app.post("/users/new", async (req, res) => {
         }
     }
 })
+
+app.put("/users/:id", async (req, res) => {
+    try {
+        const userId = req.params.id
+        const now = new Date()
+
+        // Check if the cohort exists
+        const existingCohort = await Cohort.findOne({ cohortName: req.body.cohortName })
+
+        if (existingCohort) {
+            // Update user details and cohort alumni
+            await User.findByIdAndUpdate(userId, {
+                fullName: req.body.fullName,
+                gitUrl: req.body.gitUrl,
+                email: req.body.email,
+                linkedIn: req.body.linkedIn,
+                aboutMe: req.body.aboutMe,
+                cohort: existingCohort._id,
+                lastLogin: now
+            });
+
+            await Cohort.findByIdAndUpdate(existingCohort._id, {
+                $addToSet: { alumni: userId }
+            });
+
+            res.sendStatus(200)
+        } else {
+            res.status(400).send("Cohort does not exist")
+        }
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
 
 app.get("/", (req, res) => {
     res.json({message: "Server running"})
