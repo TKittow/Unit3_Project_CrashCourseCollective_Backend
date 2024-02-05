@@ -14,7 +14,9 @@ const fetch = (...args) =>
 const app = express()
 
 
-app.use(cors())
+// app.use(cors())
+app.use(cors({ origin: '*' }))
+
 app.use(bodyParser.json())
 
 const port = process.env.PORT || 4000
@@ -32,18 +34,6 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true
-    },
-    userEmail: {
-        type: String,
-        required: true
-    },
-    cohort: {
-        type: Number,
-        required: false
-    },
-    linkedIn: {
-        type: String,
-        required: false
     },
     lastLogin: {
         type: Date, 
@@ -75,17 +65,17 @@ const projectSchema = new mongoose.Schema({
     },
 })
 
+
 const User = mongoose.model("User", userSchema)
+const Project = mongoose.model("Project", projectSchema)
 
-app.post("/user/login", async (req, res) => {
+app.post("/users/new", async (req, res) => {
     const now = new Date()
+    console.log("Request body:", req.body);
 
-    if ( await User.countDocuments({"userEmail": req.body.userEmail}) === 0 ) {
+    if ( await User.countDocuments({"username": req.body.username}) === 0 ) {
         const newUser = new User({
             username: req.body.username,
-            userEmail: req.body.userEmail,
-            cohort: req.body.cohort,
-            linkedIn: req.body.linkedIn,
             lastLogin: now
         })
         newUser.save()
@@ -96,17 +86,40 @@ app.post("/user/login", async (req, res) => {
             res.sendStatus(500)
         })
     } else {
-        await User.findOneAndUpdate(
-            {"userEmail": req.body.userEmail}, 
-            {cohort: req.body.cohort},
-            {linkedIn: req.body.linkedIn},
-            {lastLogin: now})
-        res.sendStatus(200)
+        try {
+            await User.findOneAndUpdate(
+                {"username": req.body.username}, 
+                {lastLogin: now}
+                )
+                res.sendStatus(200)
+        } catch (error) {
+            console.error(error)
+            res.sendStatus(500)
+        }
     }
 })
 
 app.get("/", (req, res) => {
     res.json({message: "Server running"})
+})
+
+//Posting a new project
+app.post('/project/add', async (req, res) => {
+    const project = req.body
+    const newProject = new Project({
+        projectName: project.projectName,
+        username: project.username,
+        collaborators: project.collaborators1,
+        description: project.description,
+        deploymentLink: project.deploymentLink
+    })
+
+    await newProject.save()
+    .then(() => {
+        console.log(`${project.projectName} was added to the database`)
+    res.sendStatus(200)
+    })
+    .catch(error => console.error(error))
 })
 
 //GITHUB ACCESS
