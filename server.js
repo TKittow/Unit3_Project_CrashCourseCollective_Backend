@@ -109,6 +109,46 @@ app.post("/cohorts/new", (req, res) => {
     .catch((e) => console.error(e))
 })
 
+app.get("/cohorts", async (req, res) => {
+    try {
+        const allCohorts = await Cohort.find({}).populate("cohortName")
+        res.json(allCohorts)
+    } catch(e) {
+        console.error(e)
+    }
+})
+
+app.put("/cohorts/:id", async (req, res) => {
+    try {
+        const cohortId = req.params.id
+        const updatedCohortData = req.body
+
+        // Check if the cohort exists
+        const existingCohort = await Cohort.findById(cohortId)
+
+        if (existingCohort) {
+            // Update cohort details
+            await Cohort.findByIdAndUpdate(cohortId, updatedCohortData)
+            res.sendStatus(200);
+        } else {
+            res.status(404).send("Cohort not found")
+        }
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
+app.get("/users", async (req, res) => {
+    try {
+        const allUsers = await User.find()
+        res.json(allUsers)
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
 app.post("/users/new", async (req, res) => {
     const now = new Date()
 
@@ -174,6 +214,7 @@ app.put("/users/:id", async (req, res) => {
         res.sendStatus(500)
     }
 })
+
 
 app.get("/", (req, res) => {
     res.json({message: "Server running"})
