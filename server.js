@@ -78,8 +78,8 @@ const projectSchema = new mongoose.Schema({
     },
     username: {
         // This needs to be pulled from the User database
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        type: String,
+        required: true
     },
     collaborators: {
         type: [mongoose.Schema.Types.ObjectId],
