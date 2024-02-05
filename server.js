@@ -97,8 +97,8 @@ const projectSchema = new mongoose.Schema({
 
 
 const User = mongoose.model("User", userSchema)
-<<<<<<< HEAD
 const Cohort = mongoose.model("Cohort", cohortSchema)
+const Project = mongoose.model("Project", projectSchema)
 
 app.post("/cohorts/new", (req, res) => {
     const cohort = req.body
@@ -150,10 +150,7 @@ app.get("/users", async (req, res) => {
         res.sendStatus(500)
     }
 })
-=======
-const Project = mongoose.model("Project", projectSchema)
 
->>>>>>> dev
 
 app.post("/users/new", async (req, res) => {
     const now = new Date()
