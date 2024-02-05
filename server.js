@@ -47,12 +47,12 @@ const projectSchema = new mongoose.Schema({
     },
     username: {
         // This needs to be pulled from the User database
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
     collaborators: {
-        type: String,
-        required: true
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "User"
     },
     description: {
         type: String,
@@ -67,6 +67,7 @@ const projectSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema)
 const Project = mongoose.model("Project", projectSchema)
+
 
 app.post("/users/new", async (req, res) => {
     const now = new Date()
@@ -107,6 +108,7 @@ app.post('/project/add', async (req, res) => {
     const project = req.body
     const newProject = new Project({
         projectName: project.projectName,
+        //Change Username field to currently logged in
         username: project.username,
         collaborators: project.collaborators1,
         description: project.description,
