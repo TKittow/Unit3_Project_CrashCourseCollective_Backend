@@ -78,12 +78,12 @@ const projectSchema = new mongoose.Schema({
     },
     username: {
         // This needs to be pulled from the User database
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
     collaborators: {
-        type: String,
-        required: true
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "User"
     },
     description: {
         type: String,
@@ -95,7 +95,9 @@ const projectSchema = new mongoose.Schema({
     },
 })
 
+
 const User = mongoose.model("User", userSchema)
+<<<<<<< HEAD
 const Cohort = mongoose.model("Cohort", cohortSchema)
 
 app.post("/cohorts/new", (req, res) => {
@@ -148,6 +150,10 @@ app.get("/users", async (req, res) => {
         res.sendStatus(500)
     }
 })
+=======
+const Project = mongoose.model("Project", projectSchema)
+
+>>>>>>> dev
 
 app.post("/users/new", async (req, res) => {
     const now = new Date()
@@ -218,6 +224,26 @@ app.put("/users/:id", async (req, res) => {
 
 app.get("/", (req, res) => {
     res.json({message: "Server running"})
+})
+
+//Posting a new project
+app.post('/project/add', async (req, res) => {
+    const project = req.body
+    const newProject = new Project({
+        projectName: project.projectName,
+        //Change Username field to currently logged in
+        username: project.username,
+        collaborators: project.collaborators1,
+        description: project.description,
+        deploymentLink: project.deploymentLink
+    })
+
+    await newProject.save()
+    .then(() => {
+        console.log(`${project.projectName} was added to the database`)
+    res.sendStatus(200)
+    })
+    .catch(error => console.error(error))
 })
 
 //GITHUB ACCESS
