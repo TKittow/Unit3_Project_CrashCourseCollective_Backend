@@ -103,6 +103,16 @@ app.get("/", (req, res) => {
     res.json({message: "Server running"})
 })
 
+app.get('/projects', async (req, res) => {
+    try{
+        const allProjects = await Project.find({})
+        res.json(allProjects)
+    }
+    catch (err){
+        console.error(err)
+    }
+})
+
 //Posting a new project
 app.post('/project/add', async (req, res) => {
     const project = req.body
