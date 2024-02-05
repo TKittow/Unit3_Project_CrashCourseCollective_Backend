@@ -151,7 +151,6 @@ app.get("/users", async (req, res) => {
     }
 })
 
-
 app.post("/users/new", async (req, res) => {
     const now = new Date()
 
