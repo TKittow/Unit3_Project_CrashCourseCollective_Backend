@@ -4,14 +4,15 @@ import cors from "cors"
 import bodyParser from "body-parser"
 import mongoose from "mongoose"
 
-
 const fetch = (...args) => 
   import('node-fetch')
   .then(({default: fetch}) => 
   fetch(...args))
 
 
+
 const app = express()
+
 
 // app.use(cors())
 app.use(cors({ origin: '*' }))
