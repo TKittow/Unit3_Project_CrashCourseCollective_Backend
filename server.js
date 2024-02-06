@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    linkedIn: {
+        type: String,
+        required: false
+    },
     aboutMe: {
         type: String,
         required: false
@@ -214,17 +218,22 @@ app.post("/users/new", async (req, res) => {
     }
 })
 
-app.put("/users/:id", async (req, res) => {
+app.put("/users/:username", async (req, res) => {
+    console.log(req.params, req.body)
     try {
-        const userId = req.params.id
+        const username = req.params.username
         const now = new Date()
 
-        // Check if the cohort exists
-        const existingCohort = await Cohort.findOne({ cohortName: req.body.cohortName })
+        // Check if the cohort name is provided in the request body
+        const existingCohort = await Cohort.findById(req.body.cohort)
+        // console.log(existingCohort)
+
+        const currentUserDetails = await User.findOne({ username : username })
+        console.log(currentUserDetails.cohort)
 
         if (existingCohort) {
             // Update user details and cohort alumni
-            await User.findByIdAndUpdate(userId, {
+            const updatedUser = await User.findOneAndUpdate({ username : username }, {
                 fullName: req.body.fullName,
                 gitUrl: req.body.gitUrl,
                 email: req.body.email,
@@ -232,23 +241,36 @@ app.put("/users/:id", async (req, res) => {
                 aboutMe: req.body.aboutMe,
                 cohort: existingCohort._id,
                 lastLogin: now
-            });
+            })
+            // Remove the user from their previous cohort
+            const updatedCohort = await Cohort.findOneAndUpdate(
+                { _id: currentUserDetails.cohort }, 
+                { $pull: { alumni: currentUserDetails._id } }
+            )
+            console.log("updatedCohort", updatedCohort)
 
-            await Cohort.findByIdAndUpdate(existingCohort._id, {
-                $addToSet: { alumni: userId }
-            });
-
-            res.sendStatus(200)
+            const updatedCohort2 = await Cohort.findByIdAndUpdate(existingCohort._id, {
+                $addToSet: { alumni: currentUserDetails._id }
+            })
+            console.log("updatedCohort2", updatedCohort2)
         } else {
-            res.status(400).send("Cohort does not exist")
+            // Update user details without updating the cohort
+            await User.findOneAndUpdate({ username }, {
+                fullName: req.body.fullName,
+                gitUrl: req.body.gitUrl,
+                email: req.body.email,
+                linkedIn: req.body.linkedIn,
+                aboutMe: req.body.aboutMe,
+                lastLogin: now
+            })
         }
+
+        res.sendStatus(200)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
     }
 })
-
-
 
 
 
@@ -286,7 +308,7 @@ app.post('/project/add', async (req, res) => {
 app.get('/getAccessToken', async function (req,res) {
     req.query.code
 
-    const params = `?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&code=${req.query.code}`;
+    const params = `?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&code=${req.query.code}`
     try{
         await fetch('https://github.com/login/oauth/access_token' + params, {
             method: "POST",
@@ -299,9 +321,9 @@ app.get('/getAccessToken', async function (req,res) {
             res.json(data)
         })
     } catch (e) {
-        console.error(e);
+        console.error(e)
 }
-console.log(params);
+console.log(params)
 })
 
 //get USERDATA GITHUB
@@ -315,19 +337,7 @@ app.get ('/getUserData', async function (req, res) {
     }).then((response) => {
         return response.json()
     }).then ((data) => {
-        console.log(data);
+        console.log(data)
         res.json(data)
     })
 })
-
-app.get('/users/:username', (req, res) => {
-    const { username } = req.params;
-  
-    // Check if the username exists in the database
-    if (username in usersDatabase) {
-      const userData = usersDatabase[username];
-      res.json(userData); // Send user data as JSON response
-    } else {
-      res.status(404).json({ error: 'User not found' }); // Send error response if user not found
-    }
-  });
