@@ -151,6 +151,22 @@ app.get("/users", async (req, res) => {
     }
 })
 
+app.get("/users/:username", async (req, res) => {
+    try {
+        const username = req.params.username
+        const user = await User.findOne({username})
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+        console.log(user)
+        res.json(user)
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
 app.post("/users/new", async (req, res) => {
     const now = new Date()
 
