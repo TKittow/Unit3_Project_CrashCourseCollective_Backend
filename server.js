@@ -319,15 +319,3 @@ app.get ('/getUserData', async function (req, res) {
         res.json(data)
     })
 })
-
-app.get('/users/:username', (req, res) => {
-    const { username } = req.params;
-  
-    // Check if the username exists in the database
-    if (username in usersDatabase) {
-      const userData = usersDatabase[username];
-      res.json(userData); // Send user data as JSON response
-    } else {
-      res.status(404).json({ error: 'User not found' }); // Send error response if user not found
-    }
-  });
