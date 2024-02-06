@@ -101,6 +101,29 @@ const User = mongoose.model("User", userSchema)
 const Cohort = mongoose.model("Cohort", cohortSchema)
 const Project = mongoose.model("Project", projectSchema)
 
+app.get("/", (req, res) => {
+    res.json({message: "Server running"})
+})
+
+app.get('/projects', async (req, res) => {
+    try{
+        const allProjects = await Project.find({})
+        res.json(allProjects)
+    }
+    catch (err){
+        console.error(err)
+    }
+})
+
+app.get("/cohorts", async (req, res) => {
+    try {
+        const allCohorts = await Cohort.find({}).populate("cohortName")
+        res.json(allCohorts)
+    } catch(e) {
+        console.error(e)
+    }
+})
+
 app.post("/cohorts/new", (req, res) => {
     const cohort = req.body
     const newCohort = new Cohort({ cohortName: cohort.cohortName })
@@ -112,14 +135,6 @@ app.post("/cohorts/new", (req, res) => {
     .catch((e) => console.error(e))
 })
 
-app.get("/cohorts", async (req, res) => {
-    try {
-        const allCohorts = await Cohort.find({}).populate("cohortName")
-        res.json(allCohorts)
-    } catch(e) {
-        console.error(e)
-    }
-})
 
 app.put("/cohorts/:id", async (req, res) => {
     try {
@@ -146,6 +161,22 @@ app.get("/users", async (req, res) => {
     try {
         const allUsers = await User.find()
         res.json(allUsers)
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
+app.get("/users/:username", async (req, res) => {
+    try {
+        const username = req.params.username
+        const user = await User.findOne({username})
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+        console.log(user)
+        res.json(user)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -219,26 +250,25 @@ app.put("/users/:id", async (req, res) => {
 })
 
 
-app.get("/", (req, res) => {
-    res.json({message: "Server running"})
-})
+
+
 
 app.get('/projects', async (req, res) => {
     try{
         const allProjects = await Project.find({})
         res.json(allProjects)
     }
-    catch (err){
+    catch(err){
         console.error(err)
     }
 })
+
 
 //Posting a new project
 app.post('/project/add', async (req, res) => {
     const project = req.body
     const newProject = new Project({
         projectName: project.projectName,
-        //Change Username field to currently logged in
         username: project.username,
         collaborators: project.collaborators1,
         description: project.description,
@@ -290,3 +320,15 @@ app.get ('/getUserData', async function (req, res) {
         res.json(data)
     })
 })
+
+app.get('/users/:username', (req, res) => {
+    const { username } = req.params;
+  
+    // Check if the username exists in the database
+    if (username in usersDatabase) {
+      const userData = usersDatabase[username];
+      res.json(userData); // Send user data as JSON response
+    } else {
+      res.status(404).json({ error: 'User not found' }); // Send error response if user not found
+    }
+  });
