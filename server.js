@@ -296,6 +296,22 @@ app.get('/projects', async (req, res) => {
     }
 })
 
+app.get("/projects/:username", async (req, res) => {
+    try {
+        const username = req.params.username;
+        const projects = await Project.find({ username });
+
+        if (!projects || projects.length === 0) {
+            return res.status(404).json({ message: "No projects found for the specified username" });
+        }
+        
+        res.json(projects);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+});
+
 
 //Posting a new project
 app.post('/project/add', async (req, res) => {
