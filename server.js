@@ -247,7 +247,6 @@ app.put("/users/:username", async (req, res) => {
                 linkedIn: req.body.linkedIn,
                 aboutMe: req.body.aboutMe,
                 cohort: existingCohort._id,
-                
                 lastLogin: now
             })
             // Remove the user from their previous cohort
