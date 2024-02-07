@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    userAvatar: {
+        type: String,
+        required: true
+    },
     lastLogin: {
         type: Date, 
         required: true
@@ -194,6 +198,7 @@ app.post("/users/new", async (req, res) => {
         const newUser = new User({
             username: req.body.username,
             gitUrl: req.body.gitUrl,
+            userAvatar: req.body.userAvatar,
             lastLogin: now
         })
         newUser.save()
@@ -209,6 +214,7 @@ app.post("/users/new", async (req, res) => {
             await User.findOneAndUpdate(
                 {"username": req.body.username},
                 {"gitUrl": req.body.gitUrl}, 
+                {"userAvatar": req.body.userAvar},
                 {lastLogin: now}
                 )
                 res.sendStatus(200)
@@ -241,6 +247,7 @@ app.put("/users/:username", async (req, res) => {
                 linkedIn: req.body.linkedIn,
                 aboutMe: req.body.aboutMe,
                 cohort: existingCohort._id,
+                
                 lastLogin: now
             })
             // Remove the user from their previous cohort
@@ -273,7 +280,12 @@ app.put("/users/:username", async (req, res) => {
     }
 })
 
-
+app.delete("/users/:id", async(req, res) => {
+    const userId = req.params.id
+    await User.findByIdAndDelete(userId)
+    console.log("User deleted")
+    res.sendStatus(200)
+})
 
 app.get('/projects', async (req, res) => {
     try{
