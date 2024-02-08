@@ -303,9 +303,9 @@ app.get("/projects/:username", async (req, res) => {
 
         if (!projects || projects.length === 0) {
             return res.status(404).json({ message: "No projects found for the specified username" });
-        }
+        } else{res.json(projects);}
         
-        res.json(projects);
+        
     } catch (error) {
         console.error(error);
         res.sendStatus(500);
