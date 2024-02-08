@@ -108,6 +108,10 @@ const projectSchema = new mongoose.Schema({
     userAvatarUrl: {
         type: String,
         required: true
+    },
+    repoLink: {
+        type: String,
+        required: true
     }
 })
 
@@ -384,7 +388,8 @@ app.post('/project/add', async (req, res) => {
         collaborators: project.collaborators,
         description: project.description,
         deploymentLink: project.deploymentLink,
-        userAvatarUrl: project.userAvatarUrl
+        userAvatarUrl: project.userAvatarUrl,
+        repoLink: project.repoLink
     })
 
     await newProject.save()
@@ -410,6 +415,7 @@ app.put('/project/:id', async (req, res) => {
         existingProject.collaborators = updatedProjectData.collaborators
         existingProject.deploymentLink = updatedProjectData.deploymentLink
         existingProject.deploymentImage = updatedProjectData.deploymentImage
+        existingProject.repoLink = updatedProjectData.repoLink
         //save updated
         await existingProject.save()
         
