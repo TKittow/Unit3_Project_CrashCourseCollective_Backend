@@ -113,15 +113,9 @@ app.get("/", (req, res) => {
     res.json({message: "Server running"})
 })
 
-app.get('/projects', async (req, res) => {
-    try{
-        const allProjects = await Project.find({})
-        res.json(allProjects)
-    }
-    catch (err){
-        console.error(err)
-    }
-})
+//! COHORTS -------------------
+
+
 
 app.get("/cohorts", async (req, res) => {
     try {
@@ -164,6 +158,11 @@ app.put("/cohorts/:id", async (req, res) => {
         res.sendStatus(500)
     }
 })
+
+
+//! USERS -----------------------
+
+
 
 app.get("/users", async (req, res) => {
     try {
@@ -312,12 +311,27 @@ app.delete("/users/:id", async (req, res) => {
     }
 })
 
+
+//! PROJECTS ---------------------
+
+
+
 app.get('/projects', async (req, res) => {
     try{
         const allProjects = await Project.find({})
         res.json(allProjects)
     }
     catch(err){
+        console.error(err)
+    }
+})
+
+app.get('/projects', async (req, res) => {
+    try{
+        const allProjects = await Project.find({})
+        res.json(allProjects)
+    }
+    catch (err){
         console.error(err)
     }
 })
@@ -329,9 +343,25 @@ app.get("/projects/:username", async (req, res) => {
 
         if (!projects || projects.length === 0) {
             return res.status(404).json({ message: "No projects found for the specified username" });
+        } else{res.json(projects);}
+        
+        
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+});
+
+app.get("/project/:id", async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const project = await Project.findById(projectId);
+        console.log(project)
+        if (!project) {
+            return res.status(404).json({ message: "No project found for the specified ID" });
         }
         
-        res.json(projects);
+        res.json(project);
     } catch (error) {
         console.error(error);
         res.sendStatus(500);
@@ -339,8 +369,7 @@ app.get("/projects/:username", async (req, res) => {
 });
 
 
-//Posting a new project
-app.post('/project/add', async (req, res) => {
+app.post('/project/add', async (req, res) => { 
     const project = req.body
     const newProject = new Project({
         projectName: project.projectName,
@@ -358,7 +387,35 @@ app.post('/project/add', async (req, res) => {
     .catch(error => console.error(error))
 })
 
-//GITHUB ACCESS
+app.put('/project/:id', async (req, res) => {
+    try {
+        const projectId = req.params.id
+        const updatedProjectData = req.body
+
+        const existingProject = await Project.findById(projectId)
+
+        if (!existingProject) {
+            return res.status(404).send('Project not found')
+        }
+
+        existingProject.projectName = updatedProjectData.projectName
+        existingProject.description = updatedProjectData.description
+        existingProject.collaborators = updatedProjectData.collaborators
+        existingProject.deploymentLink = updatedProjectData.deploymentLink
+        //save updated
+        await existingProject.save()
+        
+        res.status(200).send('Project saved')
+    } catch (error) {
+        console.error(error)
+        res.status(500).send('Backend Error')
+    }
+})
+
+
+//! GITHUB ---------------------
+
+
 app.get('/getAccessToken', async function (req,res) {
     req.query.code
 
@@ -395,3 +452,19 @@ app.get ('/getUserData', async function (req, res) {
         res.json(data)
     })
 })
+
+app.delete("/project/:id", async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const deletedProject = await Project.findByIdAndDelete(projectId);
+
+        if (!deletedProject) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+});
