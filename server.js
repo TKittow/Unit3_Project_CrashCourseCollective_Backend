@@ -86,13 +86,12 @@ const projectSchema = new mongoose.Schema({
         required: true
     },
     username: {
-        // This needs to be pulled from the User database
         type: String,
         required: true
     },
     collaborators: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: "User"
+        type: String,
+        required: false
     },
     description: {
         type: String,
@@ -105,6 +104,10 @@ const projectSchema = new mongoose.Schema({
     deploymentImage: {
         type: String,
         required: false
+    },
+    userAvatarUrl: {
+        type: String,
+        required: true
     }
 })
 
@@ -378,9 +381,10 @@ app.post('/project/add', async (req, res) => {
     const newProject = new Project({
         projectName: project.projectName,
         username: project.username,
-        collaborators: project.collaborators1,
+        collaborators: project.collaborators,
         description: project.description,
-        deploymentLink: project.deploymentLink
+        deploymentLink: project.deploymentLink,
+        userAvatarUrl: project.userAvatarUrl
     })
 
     await newProject.save()
