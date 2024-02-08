@@ -102,6 +102,10 @@ const projectSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    deploymentImage: {
+        type: String,
+        required: false
+    }
 })
 
 
@@ -402,6 +406,7 @@ app.put('/project/:id', async (req, res) => {
         existingProject.description = updatedProjectData.description
         existingProject.collaborators = updatedProjectData.collaborators
         existingProject.deploymentLink = updatedProjectData.deploymentLink
+        existingProject.deploymentImage = updatedProjectData.deploymentImage
         //save updated
         await existingProject.save()
         
