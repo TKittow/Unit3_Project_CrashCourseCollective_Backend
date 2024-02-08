@@ -99,7 +99,7 @@ const projectSchema = new mongoose.Schema({
     },
     deploymentLink: {
         type: String,
-        required: true
+        required: false
     },
     deploymentImage: {
         type: String,
