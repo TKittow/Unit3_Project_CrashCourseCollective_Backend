@@ -326,6 +326,22 @@ app.get("/projects/:username", async (req, res) => {
     }
 });
 
+app.get("/project/:id", async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const project = await Project.findById(projectId);
+        console.log(project)
+        if (!project) {
+            return res.status(404).json({ message: "No project found for the specified ID" });
+        }
+        
+        res.json(project);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+});
+
 
 app.post('/project/add', async (req, res) => { 
     const project = req.body
@@ -411,7 +427,7 @@ app.get ('/getUserData', async function (req, res) {
     })
 })
 
-app.delete("/projects/:id", async (req, res) => {
+app.delete("/project/:id", async (req, res) => {
     try {
         const projectId = req.params.id;
         const deletedProject = await Project.findByIdAndDelete(projectId);
