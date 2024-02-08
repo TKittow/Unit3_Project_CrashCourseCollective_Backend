@@ -138,7 +138,6 @@ app.post("/cohorts/new", (req, res) => {
     const newCohort = new Cohort({ cohortName: cohort.cohortName })
     newCohort.save()
     .then(() => {
-        console.log("Cohort saved")
         res.sendStatus(200)
     })
     .catch((e) => console.error(e))
@@ -189,7 +188,6 @@ app.get("/users/:username", async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" })
         }
-        console.log(user)
         res.json(user)
     } catch (error) {
         console.error(error)
@@ -210,7 +208,7 @@ app.post("/users/new", async (req, res) => {
         newUser.save()
         .then(() => {
             res.sendStatus(200)
-            console.log(`New user: ${req.body.username}, gitUrl: ${req.body.gitUrl} added to database`)
+            //console.log(`New user: ${req.body.username}, gitUrl: ${req.body.gitUrl} added to database`)
         })
         .catch(err => {
             res.sendStatus(500)
@@ -232,17 +230,15 @@ app.post("/users/new", async (req, res) => {
 })
 
 app.put("/users/:username", async (req, res) => {
-    console.log(req.params, req.body)
+    
     try {
         const username = req.params.username
         const now = new Date()
 
         // Check if the cohort name is provided in the request body
         const existingCohort = await Cohort.findById(req.body.cohort)
-        // console.log(existingCohort)
 
         const currentUserDetails = await User.findOne({ username : username })
-        console.log(currentUserDetails.cohort)
 
         if (existingCohort) {
             // Update user details and cohort alumni
@@ -260,12 +256,11 @@ app.put("/users/:username", async (req, res) => {
                 { _id: currentUserDetails.cohort }, 
                 { $pull: { alumni: currentUserDetails._id } }
             )
-            console.log("updatedCohort", updatedCohort)
 
             const updatedCohort2 = await Cohort.findByIdAndUpdate(existingCohort._id, {
                 $addToSet: { alumni: currentUserDetails._id }
             })
-            console.log("updatedCohort2", updatedCohort2)
+
         } else {
             // Update user details without updating the cohort
             await User.findOneAndUpdate({ username }, {
@@ -285,36 +280,30 @@ app.put("/users/:username", async (req, res) => {
     }
 })
 
-// app.delete("/users/:id", async(req, res) => {
-//     const userId = req.params.id
-//     await User.findByIdAndDelete(userId)
-//     console.log("User deleted")
-//     res.sendStatus(200)
-// })
 
 app.delete("/users/:id", async (req, res) => {
-    const userId = req.params.id;
+    const userId = req.params.id
     try {
         // Find the user by ID
-        const user = await User.findById(userId);
+        const user = await User.findById(userId)
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "User not found" })
         }
 
         // Remove the user from their cohort
-        const cohortId = user.cohort;
+        const cohortId = user.cohort
         if (cohortId) {
-            await Cohort.findByIdAndUpdate(cohortId, { $pull: { alumni: userId } });
+            await Cohort.findByIdAndUpdate(cohortId, { $pull: { alumni: userId } })
         }
 
         // Delete the user account
-        await User.findByIdAndDelete(userId);
+        await User.findByIdAndDelete(userId)
         
-        console.log("User deleted");
-        res.sendStatus(200);
+
+        res.sendStatus(200)
     } catch (error) {
-        console.error(error);
-        res.sendStatus(500);
+        console.error(error)
+        res.sendStatus(500)
     }
 })
 
@@ -363,7 +352,7 @@ app.get("/project/:id", async (req, res) => {
     try {
         const projectId = req.params.id;
         const project = await Project.findById(projectId);
-        console.log(project)
+
         if (!project) {
             return res.status(404).json({ message: "No project found for the specified ID" });
         }
@@ -389,7 +378,7 @@ app.post('/project/add', async (req, res) => {
 
     await newProject.save()
     .then(() => {
-        console.log(`${project.projectName} was added to the database`)
+       // console.log(`${project.projectName} was added to the database`)
     res.sendStatus(200)
     })
     .catch(error => console.error(error))
@@ -420,6 +409,22 @@ app.put('/project/:id', async (req, res) => {
     }
 })
 
+app.delete("/project/:id", async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const deletedProject = await Project.findByIdAndDelete(projectId)
+
+        if (!deletedProject) {
+            return res.status(404).json({ message: "Project not found" })
+        }
+
+        res.sendStatus(200)
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
 
 //! GITHUB ---------------------
 
@@ -441,8 +446,7 @@ app.get('/getAccessToken', async function (req,res) {
         })
     } catch (e) {
         console.error(e)
-}
-console.log(params)
+    }
 })
 
 //get USERDATA GITHUB
@@ -456,23 +460,7 @@ app.get ('/getUserData', async function (req, res) {
     }).then((response) => {
         return response.json()
     }).then ((data) => {
-        console.log(data)
         res.json(data)
     })
 })
 
-app.delete("/project/:id", async (req, res) => {
-    try {
-        const projectId = req.params.id;
-        const deletedProject = await Project.findByIdAndDelete(projectId);
-
-        if (!deletedProject) {
-            return res.status(404).json({ message: "Project not found" });
-        }
-
-        res.sendStatus(200);
-    } catch (error) {
-        console.error(error);
-        res.sendStatus(500);
-    }
-});
