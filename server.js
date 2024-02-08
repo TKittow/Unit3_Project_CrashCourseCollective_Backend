@@ -369,3 +369,19 @@ app.get ('/getUserData', async function (req, res) {
         res.json(data)
     })
 })
+
+app.delete("/projects/:id", async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const deletedProject = await Project.findByIdAndDelete(projectId);
+
+        if (!deletedProject) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+});
