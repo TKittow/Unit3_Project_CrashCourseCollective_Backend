@@ -279,11 +279,37 @@ app.put("/users/:username", async (req, res) => {
     }
 })
 
-app.delete("/users/:id", async(req, res) => {
-    const userId = req.params.id
-    await User.findByIdAndDelete(userId)
-    console.log("User deleted")
-    res.sendStatus(200)
+// app.delete("/users/:id", async(req, res) => {
+//     const userId = req.params.id
+//     await User.findByIdAndDelete(userId)
+//     console.log("User deleted")
+//     res.sendStatus(200)
+// })
+
+app.delete("/users/:id", async (req, res) => {
+    const userId = req.params.id;
+    try {
+        // Find the user by ID
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Remove the user from their cohort
+        const cohortId = user.cohort;
+        if (cohortId) {
+            await Cohort.findByIdAndUpdate(cohortId, { $pull: { alumni: userId } });
+        }
+
+        // Delete the user account
+        await User.findByIdAndDelete(userId);
+        
+        console.log("User deleted");
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
 })
 
 app.get('/projects', async (req, res) => {
