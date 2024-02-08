@@ -395,7 +395,6 @@ app.put('/project/:id', async (req, res) => {
     try {
         const projectId = req.params.id
         const updatedProjectData = req.body
-
         const existingProject = await Project.findById(projectId)
 
         if (!existingProject) {
