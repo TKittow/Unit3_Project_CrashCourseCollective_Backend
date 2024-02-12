@@ -389,7 +389,7 @@ app.get("/projects/collab/:username", async (req, res) => {
         console.error(error);
         res.sendStatus(500);
     }
-});
+}); 
 
 app.post('/project/add', async (req, res) => { 
     const project = req.body
