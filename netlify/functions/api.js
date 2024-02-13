@@ -429,6 +429,29 @@ router.delete("/project/:id", async (req, res) => {
     }
 })
 
+router.get("/projects/collab/:username", async (req, res) => {
+    try {
+        const username = req.params.username;
+        
+        // Find projects where either the username matches the owner or the username is found within the collaborators array
+        const projects = await Project.find({
+            $or: [
+                { username }, // Owner username
+                { collaborators: { $regex: new RegExp(username, 'i') } } // Case-insensitive regex search for the username within collaborators
+            ]
+        });
+
+        if (!projects || projects.length === 0) {
+            return res.status(404).json({ message: "No projects found for the specified username" });
+        } else {
+            res.json(projects);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+}); 
+
 
 //! GITHUB ---------------------
 
